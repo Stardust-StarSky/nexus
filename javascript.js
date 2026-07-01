@@ -9,16 +9,18 @@
     const LOGIN_START_HOUR = 8;
     const LOGIN_END_HOUR = 22;
 
-    // ---- 调试面板 ----
+    // ---- 调试面板（双击页面空白处切换） ----
     const debugPanel = document.getElementById('debugPanel');
     let debugVisible = false;
-    // 按 Ctrl+` 或双击页面底部可切换调试面板（隐藏功能）
+    // 双击页面切换调试面板
     document.addEventListener('dblclick', function(e) {
-        if (e.target === document.body || e.target.closest('#app')) {
-            debugVisible = !debugVisible;
-            debugPanel.classList.toggle('active', debugVisible);
-        }
+        // 排除输入框、按钮等交互元素
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'button' || tag === 'textarea') return;
+        debugVisible = !debugVisible;
+        debugPanel.classList.toggle('active', debugVisible);
     });
+
     function debugLog(message, type = 'info', data = null) {
         const time = new Date().toLocaleTimeString();
         const cls = type === 'ok' ? 'debug-ok' : type === 'warn' ? 'debug-warn' : type === 'error' ? 'debug-error' : 'debug-info';
