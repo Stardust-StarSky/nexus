@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>KV 管理 · 清理工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 40px 36px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .logo .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .logo h1 {
+            color: #f1f5f9;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .logo p {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .card .label {
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .card .value {
+            color: #f1f5f9;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .card .value .highlight {
+            color: #60a5fa;
+        }
+        .card .value .danger {
+            color: #f87171;
+        }
+        .card .value .success {
+            color: #34d399;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: #f1f5f9;
+            font-size: 15px;
+            transition: 0.2s;
+            outline: none;
+        }
+        .input-group input:focus {
+            border-color: #60a5fa;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 0 3px rgba(96,165,250,0.15);
+        }
+        .input-group input::placeholder {
+            color: #64748b;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(59,130,246,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 4px 16px rgba(239,68,68,0.3);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 6px 24px rgba(239,68,68,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 4px 16px rgba(34,197,94,0.3);
+        }
+        .btn-success:hover {
+            box-shadow: 0 6px 24px rgba(34,197,94,0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: #cbd5e1;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.14);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .result-box {
+            margin-top: 16px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+            font-family: 'SF Mono', 'Cascadia Code', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .result-box.success {
+            display: block;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #86efac;
+        }
+        .result-box.error {
+            display: block;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #fca5a5;
+        }
+        .result-box.info {
+            display: block;
+            background: rgba(96,165,250,0.08);
+            border: 1px solid rgba(96,165,250,0.15);
+            color: #93c5fd;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            margin-bottom: 16px;
+        }
+        .status-indicator .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-indicator .dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 12px rgba(34,197,94,0.4);
+        }
+        .status-indicator .dot.offline {
+            background: #64748b;
+        }
+        .status-indicator .status-text {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .status-indicator .status-text strong {
+            color: #f1f5f9;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #475569;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #64748b;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            color: #94a3b8;
+            text-decoration: underline;
+        }
+
+        .warning-text {
+            color: #fbbf24;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 18px;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .logo h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 头部 -->
+    <div class="logo">
+        <span class="icon">🧹</span>
+        <h1>KV 管理工具</h1>
+        <p>安全清理 · 保留好友关系</p>
+    </div>
+
+    <!-- 状态指示 -->
+    <div class="status-indicator">
+        <span class="dot online" id="statusDot"></span>
+        <span class="status-text" id="statusText">连接到 <strong id="workerStatus">检测中...</strong></span>
+    </div>
+
+    <!-- 当前状态卡 -->
+    <div class="card">
+        <div class="label">📊 当前数据状态</div>
+        <div class="value" id="dataStatus">
+            <span class="highlight">●</span> 点击下方按钮查看
+        </div>
+    </div>
+
+    <!-- 认证输入 -->
+    <div class="input-group">
+        <label>👤 管理员账号</label>
+        <input type="text" id="adminUser" placeholder="请输入管理员账号" value="admin" />
+    </div>
+    <div class="input-group">
+        <label>🔒 管理员密码</label>
+        <input type="password" id="adminPass" placeholder="请输入管理员密码" />
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- 操作按钮 -->
+    <div class="btn-group">
+        <button class="btn btn-secondary" id="checkBtn">📋 查看状态</button>
+        <button class="btn btn-danger" id="clearBtn">🗑️ 清理 KV</button>
+    </div>
+
+    <div class="warning-text" id="warningText">
+        ⚠️ 清理操作将删除所有消息、申请记录、清除时间，但保留好友关系
+    </div>
+
+    <!-- 结果显示 -->
+    <div class="result-box" id="resultBox"></div>
+
+    <!-- 页脚 -->
+    <div class="footer">
+        <span>🔒 仅限管理员操作 · 数据保留好友关系</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ============================================================
+        // 🔧 修改为您的 Worker 地址
+        // ============================================================
+        const WORKER_URL = 'https://letstalk.dengliziti.dpdns.org';
+        // ============================================================
+
+        // DOM 元素
+        const adminUser = document.getElementById('adminUser');
+        const adminPass = document.getElementById('adminPass');
+        const checkBtn = document.getElementById('checkBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultBox = document.getElementById('resultBox');
+        const dataStatus = document.getElementById('dataStatus');
+        const workerStatus = document.getElementById('workerStatus');
+        const statusDot = document.getElementById('statusDot');
+        const warningText = document.getElementById('warningText');
+
+        // ---- 工具 ----
+        function showResult(message, type = 'info') {
+            resultBox.className = 'result-box ' + type;
+            resultBox.textContent = message;
+            resultBox.style.display = 'block';
+        }
+
+        function clearResult() {
+            resultBox.style.display = 'none';
+            resultBox.className = 'result-box';
+            resultBox.textContent = '';
+        }
+
+        function setStatus(text, online = true) {
+            workerStatus.textContent = text;
+            statusDot.className = 'dot ' + (online ? 'online' : 'offline');
+        }
+
+        function setDataStatus(text, type = 'normal') {
+            const colors = {
+                normal: 'highlight',
+                warning: 'danger',
+                success: 'success'
+            };
+            const cls = colors[type] || 'highlight';
+            dataStatus.innerHTML = `<span class="${cls}">${text}</span>`;
+        }
+
+        // ---- API 调用 ----
+        async function callAdmin(endpoint, data = null) {
+            const url = `${WORKER_URL}${endpoint}`;
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: adminUser.value.trim(),
+                    password: adminPass.value.trim()
+                })
+            };
+            const resp = await fetch(url, options);
+            const result = await resp.json();
+            if (!resp.ok) {
+                throw new Error(result.error || '请求失败');
+            }
+            return result;
+        }
+
+        // ---- 检查状态 ----
+        async function checkStatus() {
+            clearResult();
+            if (!adminUser.value.trim() || !adminPass.value.trim()) {
+                showResult('⚠️ 请输入管理员账号和密码', 'error');
+                return;
+            }
+
+            setStatus('验证中...', true);
+            checkBtn.disabled = true;
+            checkBtn.textContent = '⏳ 验证中...';
+
+            try {
+                // 先测试登录是否正常
+                const result = await callAdmin('/admin/clear-kv', { username: adminUser.value.trim(), password: adminPass.value.trim() });
+                // 如果成功，显示当前状态
+                setDataStatus('✅ 服务正常，可执行清理', 'success');
+                showResult(
+                    `✅ 验证成功！\n` +
+                    `📊 当前状态：可以执行清理操作\n` +
+                    `📌 好友关系将被保留\n` +
+                    `🗑️ 将清除：消息、申请记录、清除时间、活跃状态\n` +
+                    `🔄 保留：好友列表\n`,
+                    'success'
+                );
+                setStatus('已认证 ✓', true);
+            } catch (e) {
+                setDataStatus('❌ 认证失败', 'warning');
+                showResult('❌ 认证失败：' + e.message, 'error');
+                setStatus('认证失败', false);
+            } finally {
+                checkBtn.disabled = false;
+                checkBtn.textContent = '📋 查看状态';
+            }
+        }
+
+        // ---- 清理 KV ----
+        async function clearKV() {
+            clearResult();
+            if (!adminUser.value.trim() || !adminPass.value.trim()) {
+                showResult('⚠️ 请输入管理员账号和密码', 'error');
+                return;
+            }
+
+            // 二次确认
+            if (!confirm('⚠️ 确定要清理 KV 数据吗？\n\n此操作将删除：\n• 所有聊天消息\n• 好友申请记录\n• 清除时间记录\n• 活跃状态记录\n\n但会保留好友关系。\n\n此操作不可撤销！')) {
+                showResult('已取消操作', 'info');
+                return;
+            }
+
+            setStatus('清理中...', true);
+            clearBtn.disabled = true;
+            clearBtn.textContent = '⏳ 清理中...';
+
+            try {
+                const result = await callAdmin('/admin/clear-kv', {
+                    username: adminUser.value.trim(),
+                    password: adminPass.value.trim()
+                });
+
+                if (result.success) {
+                    setDataStatus('✅ 清理完成', 'success');
+                    const msg = `✅ KV 清理成功！\n` +
+                        `📊 已删除消息：${result.deleted?.messages || '?'} 条记录\n` +
+                        `📋 好友关系已保留\n` +
+                        `🕐 可重新登录使用\n`;
+                    showResult(msg, 'success');
+                    setStatus('清理完成 ✓', true);
+                } else {
+                    setDataStatus('❌ 清理失败', 'warning');
+                    showResult('❌ 清理失败：' + (result.error || result.message || '未知错误'), 'error');
+                }
+            } catch (e) {
+                setDataStatus('❌ 清理异常', 'warning');
+                showResult('❌ 清理异常：' + e.message, 'error');
+                setStatus('清理失败', false);
+            } finally {
+                clearBtn.disabled = false;
+                clearBtn.textContent = '🗑️ 清理 KV';
+            }
+        }
+
+        // ---- 键盘事件 ----
+        adminPass.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                checkStatus();
+            }
+        });
+
+        // ---- 初始化 ----
+        setStatus('就绪', true);
+        setDataStatus('等待操作', 'normal');
+
+        // 绑定事件
+        checkBtn.addEventListener('click', checkStatus);
+        clearBtn.addEventListener('click', clearKV);
+
+        // 自动填充密码提示
+        if (!adminPass.value) {
+            adminPass.placeholder = '请输入管理员密码';
+        }
+
+        console.log('🧹 KV 管理工具已加载');
+        console.log(`📍 Worker 地址: ${WORKER_URL}`);
+    })();
+</script>
+</body>
+</html>
