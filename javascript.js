@@ -705,12 +705,12 @@
     // ---- 登录 ----
     async function login(username, password) {
         // 时间限制
-        const hour = new Date().getHours();
+        /*const hour = new Date().getHours();
         if (hour < LOGIN_START_HOUR || hour >= LOGIN_END_HOUR) {
             loginError.textContent = `当前不在服务时间（${LOGIN_START_HOUR}:00-${LOGIN_END_HOUR}:00），请稍后再试。`;
             loginError.classList.remove('hidden');
             return;
-        }
+        }*/
         loginBtn.disabled = true;
         loginBtn.textContent = '登录中...';
         debugLog(`🔐 尝试登录: ${username}`, 'info');
@@ -777,14 +777,17 @@
     // ---- 账号信息 ----
     async function loadAccountInfo() {
         debugLog('📋 加载账号信息...', 'info');
+        // 先显示加载状态
+        accountInfo.textContent = '加载中...';
         try {
             const result = await apiCall('/accounts/info');
             if (result.success) {
-                accountInfo.textContent = `📋 已注册 ${result.count} / 50 个账号`;
+                // 加载完成后显示欢迎信息
+                accountInfo.textContent = '欢迎使用即时聊天';
                 kvError.classList.add('hidden');
                 loginBtn.disabled = false;
             } else {
-                accountInfo.textContent = '⚠️ 无法加载账号信息';
+                accountInfo.textContent = '⚠️ 加载失败，请刷新';
             }
         } catch (e) {
             const errorMsg = e.message || '';

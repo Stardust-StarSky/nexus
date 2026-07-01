@@ -4,21 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <link rel="stylesheet" href="styles.css">
-    <title>即时聊天 · 好友版</title>
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <title>Nexus [Beta 1.1.3]</title>
 </head>
 <body>
 
 <div id="app">
     <!-- 登录界面 -->
     <div id="loginPage">
-        <h1>💬 即时聊天 <small>· 测试版 t1.1.2</small></h1>
+        <h1 style="display:flex; align-items:center; justify-content:center; gap:12px;">
+            <img src="logo.svg" alt="Nexus Logo" width="100" height="100" />
+            <span>Nexus <small>· 测试版 1.1.3</small></span>
+        </h1>
         <div class="login-form">
             <label>账号 <input type="text" id="usernameInput" placeholder="请输入账号" autocomplete="off" /></label>
             <label>密码 <input type="password" id="passwordInput" placeholder="请输入密码" autocomplete="new-password" /></label>
             <button class="btn" id="loginBtn">登 录</button>
             <div id="loginError" class="error-msg hidden"></div>
             <div id="kvError" class="error-msg hidden" style="background:#fee2e2; color:#b91c1c;">⚠️ 服务器存储已达上限，请稍后重试。</div>
-            <div class="account-info" id="accountInfo">欢迎使用即时聊天</div>
+            <div class="account-info" id="accountInfo">欢迎使用 Nexus</div>
         </div>
     </div>
 
@@ -64,14 +68,13 @@
         <div class="modal-box">
             <h3>关于</h3>
             <div style="margin:12px 0; line-height:1.8;">
-                <p><strong>版本：测试版 t1.1.2</strong></p>
+                <p><strong>版本：测试版 1.1.2</strong></p>
                 <p>更新内容：</p>
                 <ul style="padding-left:20px; color:#475569;">
-                    <li>修复消息重复问题</li>
-                    <li>优化时间显示</li>
-                    <li>UI界面优化</li>
+                    <li>删除调试面板</li>
+                    <li>更新聊天程序名称及logo</li>
                 </ul>
-                <p style="margin-top:12px; color:#94a3b8;">© 2026 即时聊天</p>
+                <p style="margin-top:12px; color:#94a3b8;">© 2026 Nexus</p>
             </div>
             <div class="btn-row">
                 <button class="btn-secondary" id="closeAboutBtn">关闭</button>

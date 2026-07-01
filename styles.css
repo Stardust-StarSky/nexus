@@ -169,13 +169,15 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 #customMenu .menu-item:hover { background:#f1f5f9; }
 /* ===== 用户底部栏（好友列表底部） ===== */
 .user-footer {
-    padding: 12px 18px;
+    padding: 8px 18px;
     border-top: 1px solid #e9edf2;
     background: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    min-height: 75px; /* 与输入框高度一致 */
+    height: 75px;
 }
 .user-footer #myUsername {
     font-size: 14px;
@@ -193,9 +195,4 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 }
 .user-footer .logout-btn:hover {
     background: #d1d9e6;
-}
-
-/* ===== 移除调试按钮相关（但保留面板） ===== */
-#debugToggle {
-    display: none !important;
 }
