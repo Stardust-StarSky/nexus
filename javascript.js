@@ -11,12 +11,13 @@
 
     // ---- 调试面板 ----
     const debugPanel = document.getElementById('debugPanel');
-    const debugToggle = document.getElementById('debugToggle');
     let debugVisible = false;
-    debugToggle.addEventListener('click', () => {
-        debugVisible = !debugVisible;
-        debugPanel.classList.toggle('active', debugVisible);
-        debugToggle.textContent = debugVisible ? '🔴 关闭日志' : '🐛 调试日志';
+    // 按 Ctrl+` 或双击页面底部可切换调试面板（隐藏功能）
+    document.addEventListener('dblclick', function(e) {
+        if (e.target === document.body || e.target.closest('#app')) {
+            debugVisible = !debugVisible;
+            debugPanel.classList.toggle('active', debugVisible);
+        }
     });
     function debugLog(message, type = 'info', data = null) {
         const time = new Date().toLocaleTimeString();

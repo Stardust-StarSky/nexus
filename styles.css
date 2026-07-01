@@ -207,3 +207,35 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 #customMenu { display:none; position:fixed; background:white; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); padding:4px 0; z-index:9999; min-width:100px; }
 #customMenu .menu-item { padding:6px 20px; cursor:pointer; font-size:14px; }
 #customMenu .menu-item:hover { background:#f1f5f9; }
+/* ===== 用户底部栏（好友列表底部） ===== */
+.user-footer {
+    padding: 12px 18px;
+    border-top: 1px solid #e9edf2;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.user-footer #myUsername {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+.user-footer .logout-btn {
+    background: #e9edf2;
+    border: none;
+    padding: 4px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #475569;
+}
+.user-footer .logout-btn:hover {
+    background: #d1d9e6;
+}
+
+/* ===== 移除调试按钮相关（但保留面板） ===== */
+#debugToggle {
+    display: none !important;
+}
