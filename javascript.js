@@ -236,7 +236,10 @@
             case 'online_status': {
                 const { username, online } = data;
                 const f = friends.find(item => item.username === username);
-                if (f) { f.online = online; renderFriendList(); }
+                if (f) { 
+                    f.online = online; 
+                    renderFriendList(); 
+                }
                 break;
             }
             case 'message_recalled': {
@@ -421,8 +424,15 @@
         try {
             const result = await apiCall('/friends');
             if (result.friends) {
-                friends = result.friends.map(f => ({ username: f.username, online: f.online || false, unread: f.unread || false }));
-                friends.forEach(f => { if (f.unread) unreadMap[f.username] = true; });
+                friends = result.friends.map(f => ({ 
+                    username: f.username, 
+                    online: f.online || false, 
+                    unread: f.unread || false 
+                }));
+                // 不要覆盖已有的 unreadMap
+                friends.forEach(f => { 
+                    if (f.unread) unreadMap[f.username] = true; 
+                });
                 renderFriendList();
             }
         } catch (e) {
@@ -746,6 +756,9 @@
             loginBtn.disabled = false;
             loginBtn.textContent = '登 录';
             return false;
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = '登 录';
         }
     }
 
