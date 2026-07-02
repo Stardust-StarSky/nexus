@@ -185,12 +185,38 @@
                 break;
             case 'new_message': {
                 const msg = data.message;
-                // 【关键】完全忽略自己的回显
+                
+                // 处理自己的回显：替换临时消息
                 if (msg.from === currentUser) {
-                    debugLog('⏭️ 忽略自己的回显', 'info');
-                    return;
+                    debugLog('📩 收到自己的回显', 'info', msg);
+                    const friend = msg.to;
+                    const friendTrim = friend.trim();
+                    const msgs = messagesCache[friendTrim] || [];
+                    // 查找对应的临时消息（id 以 'temp_' 开头，且内容相同，时间相近）
+                    const tempIndex = msgs.findIndex(m => m.id.startsWith('temp_') && m.text === msg.text && Math.abs(m.time - msg.time) < 5000);
+                    if (tempIndex !== -1) {
+                        // 替换为真实消息
+                        const tempMsg = msgs[tempIndex];
+                        msgs[tempIndex] = msg;
+                        messageIdSet[msg.id] = true;
+                        delete messageIdSet[tempMsg.id];
+                        if (currentFriend === friendTrim) {
+                            renderMessages(friendTrim, renderVersion);
+                        }
+                        debugLog(`✅ 已替换临时消息为真实消息 (${msg.id})`, 'ok');
+                    } else {
+                        // 如果没有找到临时消息，直接添加（但理论上不应发生）
+                        if (!messagesCache[friendTrim]) messagesCache[friendTrim] = [];
+                        messagesCache[friendTrim].push(msg);
+                        messageIdSet[msg.id] = true;
+                        if (currentFriend === friendTrim) {
+                            renderMessages(friendTrim, renderVersion);
+                        }
+                    }
+                    break; // 处理完回显后不再继续
                 }
-                // 只处理与自己相关的消息
+
+                // 处理其他用户的消息
                 if (msg.from !== currentUser && msg.to !== currentUser) {
                     return;
                 }
