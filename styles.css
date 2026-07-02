@@ -23,7 +23,22 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 
 /* ===== 好友列表 ===== */
 #friendList { width:100%; background:#f8fafc; border-right:1px solid #e9edf2; display:flex; flex-direction:column; overflow:hidden; transition:width 0.2s; }
-#friendList .header { padding:16px 18px; background:white; border-bottom:1px solid #e9edf2; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; flex-wrap:wrap; gap:8px; }
+
+/* 统一顶部栏高度：56px */
+#friendList .header {
+    padding: 8px 18px;
+    background: white;
+    border-bottom: 1px solid #e9edf2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 56px;
+    height: 56px;
+    box-sizing: border-box;
+}
 #friendList .header .left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 #friendList .header h2 { font-size:18px; font-weight:600; color:#1e293b; }
 #friendList .header .add-btn { background:#3b82f6; color:white; border:none; border-radius:20px; padding:4px 14px; font-size:14px; cursor:pointer; }
@@ -59,7 +74,20 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 /* ===== 聊天区域 ===== */
 #chatArea { flex:1; display:none; flex-direction:column; background:white; overflow:hidden; }
 #chatArea.active { display:flex; }
-#chatArea .chat-header { padding:12px 20px; border-bottom:1px solid #e9edf2; display:flex; align-items:center; gap:12px; flex-shrink:0; background:white; }
+
+/* 统一顶部栏高度：56px */
+#chatArea .chat-header {
+    padding: 8px 20px;
+    border-bottom: 1px solid #e9edf2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    background: white;
+    min-height: 56px;
+    height: 56px;
+    box-sizing: border-box;
+}
 #chatArea .chat-header .back-btn { display:none; background:none; border:none; font-size:24px; cursor:pointer; color:#475569; padding:0 4px; }
 #chatArea .chat-header .friend-name { font-size:18px; font-weight:600; color:#1e293b; flex:1; }
 #chatArea .chat-header .actions { display:flex; gap:8px; }
@@ -102,11 +130,115 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 
 @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 
-#chatArea .input-area { padding:12px 16px; border-top:1px solid #e9edf2; display:flex; gap:10px; background:white; flex-shrink:0; }
-#chatArea .input-area input { flex:1; padding:12px 18px; border:1px solid #d1d9e6; border-radius:30px; font-size:16px; outline:none; background:#f8fafc; transition:0.2s; }
+/* 统一底部栏高度：56px */
+#chatArea .input-area {
+    padding: 6px 12px;
+    border-top: 1px solid #e9edf2;
+    display: flex;
+    gap: 6px;
+    background: white;
+    flex-shrink: 0;
+    align-items: center;
+    min-height: 56px;
+    height: 56px;
+    box-sizing: border-box;
+}
+
+#chatArea .input-area input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1px solid #d1d9e6;
+    border-radius: 30px;
+    font-size: 15px;
+    outline: none;
+    background: #f8fafc;
+    transition: 0.2s;
+    height: 38px;
+}
+
+#chatArea .input-area .btn-send {
+    background: #3b82f6;
+    border: none;
+    color: white;
+    padding: 6px 18px;
+    height: 38px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-width: 56px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
 #chatArea .input-area input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.15); background:white; }
-#chatArea .input-area .btn-send { background:#3b82f6; border:none; color:white; width:50px; height:50px; border-radius:50%; font-size:22px; cursor:pointer; transition:0.15s; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-#chatArea .input-area .btn-send:active { transform:scale(0.92); }
+#chatArea .input-area .btn-send:active {
+    transform: scale(0.95);
+}
+/* 表情按钮 */
+.btn-emoji {
+    background: none;
+    border: none;
+    font-size: 22px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #64748b;
+}
+.btn-emoji:hover {
+    background: #f1f5f9;
+}
+.btn-emoji:active {
+    transform: scale(0.92);
+}
+
+/* 表情面板 */
+#emojiPanel {
+    display: none;
+    padding: 8px 12px;
+    background: white;
+    border-top: 1px solid #e9edf2;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    scrollbar-width: none;           /* Firefox 隐藏滚动条 */
+    -ms-overflow-style: none;        /* IE/Edge 隐藏滚动条 */
+}
+#emojiPanel::-webkit-scrollbar {
+    display: none;                   /* Chrome/Safari 隐藏滚动条 */
+}
+#emojiPanel.show {
+    display: flex !important;
+}
+#emojiPanel .emoji-item {
+    font-size: 24px;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: 0.15s;
+    user-select: none;
+    line-height: 1.4;
+}
+#emojiPanel .emoji-item:hover {
+    background: #f1f5f9;
+    transform: scale(1.1);
+}
+#emojiPanel .emoji-item:active {
+    transform: scale(0.9);
+}
 
 /* ===== 响应式 ===== */
 @media (min-width:768px) {
@@ -172,7 +304,8 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 #customMenu { display:none; position:fixed; background:white; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); padding:4px 0; z-index:9999; min-width:100px; }
 #customMenu .menu-item { padding:6px 20px; cursor:pointer; font-size:14px; }
 #customMenu .menu-item:hover { background:#f1f5f9; }
-/* ===== 用户底部栏（好友列表底部） ===== */
+
+/* ===== 用户底部栏（好友列表底部） 统一高度：56px ===== */
 .user-footer {
     padding: 8px 18px;
     border-top: 1px solid #e9edf2;
@@ -181,11 +314,12 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    min-height: 75px; /* 与输入框高度一致 */
-    height: 75px;
+    min-height: 56px;
+    height: 56px;
+    box-sizing: border-box;
 }
 .user-footer #myUsername {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: #1e293b;
 }
@@ -200,4 +334,112 @@ body { background:#f0f2f5; height:100vh; display:flex; justify-content:center; a
 }
 .user-footer .logout-btn:hover {
     background: #d1d9e6;
+}
+
+/* ===== 暗色主题 ===== */
+@media (prefers-color-scheme: dark) {
+    body { background: #0f0f12; }
+    #app { background: #1c1c22; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); }
+    #loginPage h1 { color: #f1f5f9; }
+    #loginPage h1 small { color: #94a3b8; }
+    .login-form label { color: #cbd5e1; }
+    .login-form input { background: #2a2a32; border-color: #3a3a44; color: #f1f5f9; }
+    .login-form input:focus { border-color: #3b82f6; background: #2a2a32; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+    .login-form input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #2a2a32 inset !important; -webkit-text-fill-color: #f1f5f9 !important; }
+    .account-info { color: #94a3b8; }
+    .error-msg { background: #450a0a; color: #fca5a5; }
+    #friendList { background: #16161d; border-right-color: #2a2a32; }
+    #friendList .header { background: #1c1c22; border-bottom-color: #2a2a32; }
+    #friendList .header h2 { color: #f1f5f9 !important; }
+    #friendList .header .user-info { color: #94a3b8; }
+    #friendList .header .user-info .logout-btn { background: #2a2a32; color: #cbd5e1; }
+    #friendList .header .user-info .logout-btn:hover { background: #3a3a44; }
+    .friend-item { border-bottom-color: #2a2a32; }
+    .friend-item:hover { background: #2a2a32; }
+    .friend-item.active { background: #2a2a32; }
+    .friend-item .info .name { color: #f1f5f9; }
+    .friend-item .info .last-msg { color: #94a3b8; }
+    .friend-item .time { color: #64748b; }
+    #requestEntry { background: #3a2a0a; border-bottom-color: #5a3a0a; }
+    #requestEntry span { color: #fcd34d; }
+    #chatArea { background: #1c1c22; }
+    #chatArea .chat-header { background: #1c1c22; border-bottom-color: #2a2a32; }
+    #chatArea .chat-header .friend-name { color: #f1f5f9; }
+    #chatArea .chat-header .actions button { color: #94a3b8; }
+    #chatArea .chat-header .actions button:hover { background: #2a2a32; }
+    #chatArea .chat-header .back-btn { color: #94a3b8; }
+    #chatArea .message-box { background: #16161d; }
+    .msg-item { background: #2a2a32; border-color: #3a3a44; color: #e2e8f0; }
+    .msg-item.me { background: #1d4ed8; border-color: #1d4ed8; color: white; }
+    .msg-item .msg-text.recalled { color: #94a3b8; }
+    .msg-item .delete-btn { background: #ef4444; color: white; }
+    .msg-item.me .delete-btn { background: #dc2626; }
+    .time-label { color: #64748b; }
+    #chatArea .input-area { background: #1c1c22; border-top-color: #2a2a32; }
+    #chatArea .input-area input { background: #2a2a32; border-color: #3a3a44; color: #f1f5f9; }
+    #chatArea .input-area input:focus { border-color: #3b82f6; background: #2a2a32; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    #chatArea .input-area .btn-send { background: #2563eb; }
+    #chatArea .input-area .btn-send:active { background: #1d4ed8; }
+    .user-footer { background: #1c1c22; border-top-color: #2a2a32; }
+    .user-footer #myUsername { color: #f1f5f9; }
+    .user-footer .logout-btn { background: #2a2a32; color: #cbd5e1; }
+    .user-footer .logout-btn:hover { background: #3a3a44; }
+    .modal-box { background: #1c1c22; color: #f1f5f9; }
+    .modal-box h3 { color: #f1f5f9; }
+    .modal-box input { background: #2a2a32; border-color: #3a3a44; color: #f1f5f9; }
+    .modal-box input:focus { border-color: #3b82f6; background: #2a2a32; }
+    .modal-box .btn-row .btn-secondary { background: #2a2a32; color: #cbd5e1; }
+    .modal-box .btn-row .btn-secondary:hover { background: #3a3a44; }
+    .modal-box .request-item { border-bottom-color: #2a2a32; }
+    .modal-box .empty-state { color: #94a3b8; }
+    #customConfirm .box { background: #1c1c22; }
+    #customConfirm .box .title { color: #f1f5f9; }
+    #customConfirm .box .message { color: #cbd5e1; }
+    #customConfirm .box .row .cancel { background: #2a2a32; border-color: #3a3a44; color: #cbd5e1; }
+    #customConfirm .box .row .ok { background: #2563eb; color: white; }
+    #customMenu { background: #1c1c22; border-color: #3a3a44; }
+    #customMenu .menu-item { color: #f1f5f9; }
+    #customMenu .menu-item:hover { background: #2a2a32; }
+    #newMsgBtn { background: #2563eb; color: white; }
+    .empty-state { color: #94a3b8; }
+    #aboutModal .modal-box ul { color: #cbd5e1; }
+    #aboutModal .modal-box p { color: #e2e8f0; }
+    #aboutModal .modal-box .btn-secondary { background: #2a2a32; color: #cbd5e1; }
+    #aboutModal .modal-box .btn-secondary:hover { background: #3a3a44; }
+    #debugPanel { background: rgba(0, 0, 0, 0.95); border-top-color: #2a2a32; }
+    .list::-webkit-scrollbar-track, .message-box::-webkit-scrollbar-track { background: #1c1c22; }
+    .list::-webkit-scrollbar-thumb, .message-box::-webkit-scrollbar-thumb { background: #3a3a44; }
+    .btn-emoji { color: #94a3b8; }
+    .btn-emoji:hover { background: #2a2a32; }
+    #emojiPanel { background: #1c1c22 !important; border-top-color: #2a2a32 !important; position: relative; z-index: 10;}
+    #emojiPanel .emoji-item:hover { background: #2a2a32; }
+}
+
+/* ===== 模态框动画 ===== */
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-overlay.active {
+    animation: modalFadeIn 0.25s ease forwards;
+}
+#customConfirm {
+    animation: modalFadeIn 0.25s ease forwards;
+}
+
+/* 未选择好友时隐藏输入框 */
+#chatArea:not(.active) .input-area {
+    display: none;
+}
+
+/* ===== 模态框淡出动画 ===== */
+@keyframes modalFadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.96); }
+}
+.modal-overlay.closing {
+    animation: modalFadeOut 0.2s ease forwards;
+}
+#customConfirm.closing {
+    animation: modalFadeOut 0.2s ease forwards;
 }

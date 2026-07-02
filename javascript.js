@@ -18,15 +18,29 @@
 
     // ---- 自定义确认 ----
     let confirmCallback = null;
-    function showConfirm(title, message, callback) {
+    function showConfirm(title, message, callback, danger = false) {
         document.getElementById('confirmTitle').textContent = title || '提示';
         document.getElementById('confirmMessage').textContent = message || '确定执行此操作吗？';
         document.getElementById('customConfirm').style.display = 'flex';
+        // 根据 danger 设置确认按钮颜色
+        const okBtn = document.getElementById('confirmOk');
+        if (danger) {
+            okBtn.style.background = '#ef4444';  // 红色
+            okBtn.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+        } else {
+            okBtn.style.background = '#3b82f6';  // 蓝色（默认）
+            okBtn.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.3)';
+        }
         confirmCallback = callback;
     }
     function hideConfirm() {
-        document.getElementById('customConfirm').style.display = 'none';
-        confirmCallback = null;
+        const modal = document.getElementById('customConfirm');
+        modal.classList.add('closing');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.classList.remove('closing');
+            confirmCallback = null;
+        }, 200);
     }
     document.getElementById('confirmOk').addEventListener('click', () => { if (confirmCallback) confirmCallback(true); hideConfirm(); });
     document.getElementById('confirmCancel').addEventListener('click', () => { if (confirmCallback) confirmCallback(false); hideConfirm(); });
@@ -82,8 +96,26 @@
     let currentRecallMsgId = null;
     let isAtBottom = true;              // 当前是否在底部
     let pendingNewMessages = 0;         // 待显示的未读新消息条数
+    let emojiPanelVisible = false;
 
     // ---- 工具 ----
+    const EMOJI_LIST = [
+        '😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊',
+        '😋', '😎', '😍', '🥰', '😘', '😗', '😙', '😚', '🙂', '🤗',
+        '🤩', '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥',
+        '😮', '🤐', '😯', '😪', '😫', '😴', '😌', '😛', '😜', '😝',
+        '🤤', '😒', '😓', '😔', '😕', '🙃', '🤑', '😲', '☹️', '🙁',
+        '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😩',
+        '🤯', '😬', '😰', '😱', '🥵', '🥶', '😳', '🤪', '😵', '😡',
+        '😠', '🤬', '👍', '👎', '👊', '✊', '🤛', '🤜', '👏', '🙌',
+        '👐', '🤲', '🤝', '🙏', '✌️', '🤟', '🤘', '👌', '🤞', '🖕',
+        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔',
+        '❤️‍🔥', '💕', '💞', '💓', '💗', '💖', '✨', '🌟', '⭐', '🌈',
+        '🔥', '💧', '❄️', '☀️', '☁️', '⚡', '💨', '🌊', '🎉', '🎊',
+        '🎈', '🎁', '🎀', '🎂', '🍰', '🍕', '🍔', '🍟', '🌭', '🍿',
+        '🧇', '🥞', '🥓', '🥩', '🍗', '🍖', '🥨', '🥖', '🍞', '🥐',
+        '🥯', '🥚', '🍳', '🧈', '🧀', '🥛', '☕', '🍵', '🧃', '🥤',
+    ];
     function formatTime(ts) {
         if (!ts) return '';
         try {
@@ -340,11 +372,21 @@
 
     // ---- 添加好友 ----
     function closeAddFriend() {
-        addFriendModal.classList.remove('active');
-        friendSearchInput.value = '';
-        searchResult.style.display = 'none';
+        const modal = addFriendModal;
+        modal.classList.add('closing');
+        setTimeout(() => {
+            modal.classList.remove('active', 'closing');
+            friendSearchInput.value = '';
+            searchResult.style.display = 'none';
+        }, 200);
     }
-    function closeRequests() { requestModal.classList.remove('active'); }
+    function closeRequests() {
+        const modal = requestModal;
+        modal.classList.add('closing');
+        setTimeout(() => {
+            modal.classList.remove('active', 'closing');
+        }, 200);
+    }
 
     async function searchFriend() {
         const query = friendSearchInput.value.trim();
@@ -702,7 +744,7 @@
 
     // ---- 清空聊天 ----
     function clearChat(friend) {
-        showConfirm('清空聊天记录', `确定清空与 ${friend} 的所有聊天记录吗？（仅自己可见，如果对方也清空将永久删除）`, async (result) => {
+        showConfirm('清空聊天记录', `确定清空与 ${friend} 的所有聊天记录吗？`, async (result) => {
             if (!result) return;
             try {
                 await apiCall('/messages/clear', 'POST', { friend: friend });
@@ -714,7 +756,7 @@
             } catch (e) {
                 alert('清空失败: ' + e.message);
             }
-        });
+        }, true);  // ✅ 传入 true，确认按钮变为红色
     }
 
     // ---- 登录 ----
@@ -911,10 +953,21 @@
         document.getElementById('aboutModal').classList.add('active');
     });
     document.getElementById('closeAboutBtn').addEventListener('click', () => {
-        document.getElementById('aboutModal').classList.remove('active');
+        const modal = document.getElementById('aboutModal');
+        modal.classList.add('closing');
+        setTimeout(() => {
+            modal.classList.remove('active', 'closing');
+        }, 200);
     });
+    // 点击背景关闭也需修改
     document.getElementById('aboutModal').addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) document.getElementById('aboutModal').classList.remove('active');
+        if (e.target === e.currentTarget) {
+            const modal = document.getElementById('aboutModal');
+            modal.classList.add('closing');
+            setTimeout(() => {
+                modal.classList.remove('active', 'closing');
+            }, 200);
+        }
     });
     document.getElementById('newMsgBtn').addEventListener('click', () => {
         // 滚动到底部
@@ -922,12 +975,64 @@
         hideNewMessageHint();
         isAtBottom = true;
     });
+    // 表情按钮
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPanel = document.getElementById('emojiPanel');
+
+    emojiBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        emojiPanelVisible = !emojiPanelVisible;
+        emojiPanel.classList.toggle('show', emojiPanelVisible);
+        // 点击按钮时，如果面板打开，自动聚焦输入框（但不强制）
+        if (emojiPanelVisible) {
+            chatInput.focus();
+        }
+    });
+
+    // 点击页面其他地方关闭表情面板
+    document.addEventListener('click', function(e) {
+        if (emojiPanelVisible && !emojiPanel.contains(e.target) && e.target !== emojiBtn) {
+            emojiPanel.classList.remove('show');
+            emojiPanelVisible = false;
+        }
+    });
+
+    // 如果输入框获得焦点，不自动关闭面板（用户可手动点击表情按钮关闭）
 
     // ---- 初始化 ----
+    function renderEmojiPanel() {
+        const panel = document.getElementById('emojiPanel');
+        if (!panel) return;
+        let html = '';
+        for (const emoji of EMOJI_LIST) {
+            html += `<span class="emoji-item" data-emoji="${emoji}">${emoji}</span>`;
+        }
+        panel.innerHTML = html;
+        // 绑定点击事件
+        panel.querySelectorAll('.emoji-item').forEach(el => {
+            el.addEventListener('click', function() {
+                const emoji = this.dataset.emoji;
+                insertEmoji(emoji);
+            });
+        });
+    }
+
+    function insertEmoji(emoji) {
+        const input = chatInput;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const text = input.value;
+        input.value = text.substring(0, start) + emoji + text.substring(end);
+        // 将光标移动到插入的 emoji 后面
+        const newPos = start + emoji.length;
+        input.selectionStart = input.selectionEnd = newPos;
+        input.focus();
+    }
     debugLog('🚀 应用启动', 'ok');
     loginPage.style.display = 'flex';
     mainPage.classList.remove('active');
     loadAccountInfo();
+    renderEmojiPanel();
 
     window.addEventListener('beforeunload', () => {
         stopPolling();
