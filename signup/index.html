@@ -159,31 +159,48 @@
         registerBtn.disabled = true;
         registerBtn.textContent = '提交中...';
 
-        try {
-            const resp = await fetch(WORKER_URL + '/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            const result = await resp.json();
-            if (resp.ok && result.success) {
-                showSuccess('✅ 注册申请已提交！请等待管理员审核。');
-                registerBtn.disabled = false;
-                registerBtn.textContent = '提交申请';
-                usernameInput.value = '';
-                passwordInput.value = '';
-                confirmInput.value = '';
-                document.querySelectorAll('.bar').forEach(bar => { bar.className = 'bar'; });
-            } else {
-                showError('❌ ' + (result.error || '提交失败'));
-                registerBtn.disabled = false;
-                registerBtn.textContent = '提交申请';
+        // 找到这一段并替换：
+    try {
+        const resp = await fetch(WORKER_URL + '/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        
+        // 🔥 修复核心：先检查响应状态，并确保有内容可读
+        if (!resp.ok) {
+            let errText = '提交失败';
+            try {
+                const errResult = await resp.json();
+                errText = errResult.error || errText;
+            } catch(_) {
+                errText = await resp.text() || errText; // 如果不是JSON，读纯文本
             }
-        } catch (err) {
-            showError('网络错误: ' + err.message);
+            showError('❌ ' + errText);
+            registerBtn.disabled = false;
+            registerBtn.textContent = '提交申请';
+            return;
+        }
+
+        const result = await resp.json();
+        if (result.success) {
+            showSuccess('✅ 注册申请已提交！请等待管理员审核。');
+            registerBtn.disabled = false;
+            registerBtn.textContent = '提交申请';
+            usernameInput.value = '';
+            passwordInput.value = '';
+            confirmInput.value = '';
+            document.querySelectorAll('.bar').forEach(bar => { bar.className = 'bar'; });
+        } else {
+            showError('❌ ' + (result.error || '提交失败'));
             registerBtn.disabled = false;
             registerBtn.textContent = '提交申请';
         }
+    } catch (err) {
+        showError('网络错误: ' + err.message);
+        registerBtn.disabled = false;
+        registerBtn.textContent = '提交申请';
+    }
     });
 </script>
 </body>
