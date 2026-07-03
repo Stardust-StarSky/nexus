@@ -761,12 +761,6 @@
 
     // ---- 登录 ----
     async function login(username, password) {
-        const hour = new Date().getHours();
-        if (hour < LOGIN_START_HOUR || hour >= LOGIN_END_HOUR) {
-            loginError.textContent = `当前不在服务时间（${LOGIN_START_HOUR}:00-${LOGIN_END_HOUR}:00），请稍后再试。`;
-            loginError.classList.remove('hidden');
-            return;
-        }
         loginBtn.disabled = true;
         loginBtn.textContent = '登录中...';
         debugLog(`🔐 尝试登录: ${username}`, 'info');
