@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": ["/signup", "/signup/*", "/admin", "/admin/*", "/auth/*", "/ws", "/message/*"]
+}
