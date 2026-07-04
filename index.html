@@ -14,7 +14,7 @@
     <div id="loginPage">
         <h1 style="display:flex; align-items:center; justify-content:center; gap:12px;">
             <img src="logo.svg" alt="Nexus Logo" width="100" height="100" />
-            <span>Nexus <small>· 1.4.1</small></span>
+            <span>Nexus <small>· 1.5.0</small></span>
         </h1>
         <div class="login-form">
             <label>账号 <input type="text" id="usernameInput" placeholder="请输入账号" autocomplete="off" /></label>
@@ -70,11 +70,14 @@
         <div class="modal-box">
             <h3>关于</h3>
             <div style="margin:12px 0; line-height:1.8;">
-                <p><strong>版本：正式版1.4.1</strong></p>
+                <p><strong>版本：正式版 1.5.0</strong></p>
                 <p>更新内容：</p>
                 <ul style="padding-left:20px; color:#3689fe;">
-                    <li>去除服务时间限制</li>
-                    <li>修复注册问题</li>
+                    <li>新增侧栏、删除好友功能（beta: 支持实时与离线通知）</li>
+                    <li>新增未读消息红点计数</li>
+                    <li>优化 WebSocket 连接稳定性</li>
+                    <li>修复好友列表刷新不及时的问题</li>
+                    <li>增加 Toast 通知组件</li>
                 </ul>
                 <p style="margin-top:12px; color:#94a3b8;">© 2026 Nexus</p>
             </div>
@@ -120,16 +123,47 @@
             <div class="chat-header">
                 <button class="back-btn" id="backBtn">‹</button>
                 <span class="friend-name" id="chatFriendName">选择好友</span>
+                <!-- 替换原有的 .actions 部分 -->
                 <div class="actions">
-                    <button id="clearChatBtn" title="清空聊天记录">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 6h18"/>
-                            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
-                            <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
-                            <path d="M10 11v6"/>
-                            <path d="M14 11v6"/>
+                    <button id="menuToggleBtn" title="更多操作">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="5" r="1.5"/>
+                            <circle cx="12" cy="12" r="1.5"/>
+                            <circle cx="12" cy="19" r="1.5"/>
                         </svg>
                     </button>
+                </div>
+
+                <!-- 添加侧栏菜单 -->
+                <div id="chatSideMenu" class="chat-side-menu">
+                    <div class="side-menu-overlay" id="sideMenuOverlay"></div>
+                    <div class="side-menu-content">
+                        <div class="side-menu-header">
+                            <span>更多操作</span>
+                            <button id="sideMenuCloseBtn">✕</button>
+                        </div>
+                        <div class="side-menu-item" id="clearChatMenuItem">
+                            <span class="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18"/>
+                                    <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+                                    <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
+                                    <path d="M10 11v6"/>
+                                    <path d="M14 11v6"/>
+                                </svg>
+                            </span>
+                            <span>清除聊天记录</span>
+                        </div>
+                        <div class="side-menu-item danger" id="deleteFriendMenuItem">
+                            <span class="icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                </svg>
+                            </span>
+                            <span>删除好友</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="message-box" id="messageBox"><div class="empty-state">选择一位好友开始聊天</div></div>
@@ -155,7 +189,7 @@
         <div style="padding:6px 20px; cursor:pointer;" id="menuRecall">撤回</div>
     </div>
 </div>
-
+<div id="toastContainer" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:99999; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;"></div>
 <script src="javascript.js"></script>
 </body>
 </html>

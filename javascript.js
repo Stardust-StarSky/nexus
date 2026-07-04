@@ -64,7 +64,6 @@
     const chatInput = document.getElementById('chatInput');
     const sendBtn = document.getElementById('sendBtn');
     const backBtn = document.getElementById('backBtn');
-    const clearChatBtn = document.getElementById('clearChatBtn');
     const addFriendBtn = document.getElementById('addFriendBtn');
     const addFriendModal = document.getElementById('addFriendModal');
     const friendSearchInput = document.getElementById('friendSearchInput');
@@ -76,6 +75,12 @@
     const requestList = document.getElementById('requestList');
     const customMenu = document.getElementById('customMenu');
     const menuRecall = document.getElementById('menuRecall');
+    const menuToggleBtn = document.getElementById('menuToggleBtn');
+    const chatSideMenu = document.getElementById('chatSideMenu');
+    const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+    const sideMenuCloseBtn = document.getElementById('sideMenuCloseBtn');
+    const clearChatMenuItem = document.getElementById('clearChatMenuItem');
+    const deleteFriendMenuItem = document.getElementById('deleteFriendMenuItem');
 
     // ---- 状态 ----
     let currentUser = null;
@@ -89,7 +94,6 @@
     let isConnecting = false;
     let messageIdSet = {};
     let pollTimer = null;
-    let friendPollTimer = null;
     let requestPollTimer = null;
     let isUserScrolling = false;
     let renderVersion = 0;
@@ -97,6 +101,7 @@
     let isAtBottom = true;              // 当前是否在底部
     let pendingNewMessages = 0;         // 待显示的未读新消息条数
     let emojiPanelVisible = false;
+    let heartbeatInterval = null;
 
     // ---- 工具 ----
     const EMOJI_LIST = [
@@ -195,8 +200,14 @@
                 if (currentToken) {
                     ws.send(JSON.stringify({ type: 'auth', token: currentToken, username: currentUser }));
                 }
-                // 连接成功后刷新好友列表
                 loadFriends();
+                // ✅ 启动心跳（不要立即清除）
+                if (heartbeatInterval) clearInterval(heartbeatInterval);
+                heartbeatInterval = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 30000);
             };
             ws.onmessage = (ev) => {
                 try {
@@ -207,16 +218,27 @@
                     debugLog('❌ WS解析失败: ' + e.message, 'error');
                 }
             };
-            ws.onerror = () => { debugLog('❌ WS错误', 'error'); isConnecting = false; };
             ws.onclose = () => {
                 debugLog('🔌 WS关闭', 'warn');
                 isConnecting = false;
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = null;
+                }
                 ws = null;
-                // 断开后刷新好友列表
                 loadFriends();
                 if (currentToken) {
                     clearTimeout(reconnectTimer);
                     reconnectTimer = setTimeout(connectWebSocket, 3000);
+                }
+            };
+
+            ws.onerror = () => {
+                debugLog('❌ WS错误', 'error');
+                isConnecting = false;
+                if (heartbeatInterval) {
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = null;
                 }
             };
         } catch (e) {
@@ -226,7 +248,7 @@
     }
 
     // ---- 处理 WS 消息 ----
-    function handleWsMessage(data) {
+    async function handleWsMessage(data) {
         switch (data.type) {
             case 'auth_success':
                 debugLog('✅ WS认证成功', 'ok');
@@ -276,6 +298,7 @@
                         pendingNewMessages++;
                         showNewMessageHint(pendingNewMessages);
                     }
+                    markAsRead(friendTrim);
                 } else {
                     // 不在当前聊天 → 增加未读计数（红点）
                     if (!unreadCountMap[friendTrim]) unreadCountMap[friendTrim] = 0;
@@ -309,9 +332,30 @@
                 break;
             case 'friend_request_processed':
                 debugLog(`📩 申请处理: ${data.from} ${data.accepted ? '同意' : '拒绝'}`, 'info');
-                loadFriends();
-                loadRequestCount();
-                if (requestModal.classList.contains('active')) loadRequests();
+                console.log('[好友申请处理] 准备刷新好友列表，当前好友数:', friends.length);
+                await loadFriends();
+                console.log('[好友申请处理] 刷新后好友数:', friends.length);
+                await loadRequestCount();
+                if (requestModal.classList.contains('active')) {
+                    await loadRequests();
+                }
+                break;
+            // 在 handleWsMessage 的 switch 中添加
+            case 'friend_deleted':
+                const deletedBy = data.by;
+                debugLog(`📩 好友 ${deletedBy} 删除了你`, 'info');
+                showToast(`⚠️ ${deletedBy} 已将您从好友列表中删除`);
+                await loadFriends();
+                if (currentFriend === deletedBy) {
+                    currentFriend = null;
+                    chatArea.classList.remove('active');
+                    chatFriendName.textContent = '选择好友';
+                    messageBox.innerHTML = '<div class="empty-state">选择一位好友开始聊天</div>';
+                    delete messagesCache[deletedBy];
+                }
+                break;
+            case 'online_status':
+                // 忽略
                 break;
             default:
                 debugLog(`❓ 未知WS类型: ${data.type}`, 'warn');
@@ -450,19 +494,17 @@
     function startPolling() {
         if (pollTimer) clearInterval(pollTimer);
         pollTimer = setInterval(pollMessages, 1000);
-        if (friendPollTimer) clearInterval(friendPollTimer);
-        friendPollTimer = setInterval(() => {
-            if (currentToken) loadFriends().catch(e => debugLog('⚠️ 好友轮询失败: ' + e.message, 'warn'));
-        }, 1000);
+        // 删除 friendPollTimer 相关代码
         if (requestPollTimer) clearInterval(requestPollTimer);
         requestPollTimer = setInterval(() => {
             if (currentToken) loadRequestCount().catch(e => debugLog('⚠️ 申请轮询失败: ' + e.message, 'warn'));
         }, 5000);
-        debugLog('🔄 轮询启动 (消息1s, 好友3s, 申请5s)', 'ok');
+        debugLog('🔄 轮询启动 (消息1s, 申请5s)', 'ok');
     }
     function stopPolling() {
-        clearInterval(pollTimer); clearInterval(friendPollTimer); clearInterval(requestPollTimer);
-        pollTimer = friendPollTimer = requestPollTimer = null;
+        clearInterval(pollTimer);
+        clearInterval(requestPollTimer);
+        pollTimer = requestPollTimer = null;
     }
 
     // ---- 好友列表（核心修复：在线状态由WebSocket控制） ----
@@ -471,10 +513,18 @@
         try {
             const result = await apiCall('/friends');
             if (result.friends && Array.isArray(result.friends)) {
+                // 更新 friends 数组
                 friends = result.friends.map(f => ({
                     username: f.username,
-                    unread: f.unread || false
+                    unread: f.unread || 0
                 }));
+                // 更新未读计数
+                unreadCountMap = {};
+                for (const f of friends) {
+                    if (f.unread > 0) {
+                        unreadCountMap[f.username] = f.unread;
+                    }
+                }
                 renderFriendList();
             } else {
                 debugLog('❌ 好友列表数据格式错误', 'error');
@@ -526,6 +576,13 @@
 
     // ---- 选择好友 ----
     function selectFriend(friend) {
+        const isFriend = friends.some(f => f.username === friend);
+        if (!isFriend) {
+            // 仍允许查看历史，但标记为“已删除”
+            // 不禁止加载消息
+            chatFriendName.textContent = friend + ' (已删除)';
+            // 但发送消息时会被阻止（sendMessage 中已有检查）
+        }
         // 切换好友时重置新消息提示
         pendingNewMessages = 0;
         hideNewMessageHint();
@@ -575,6 +632,34 @@
             debugLog('❌ 加载消息失败: ' + e.message, 'error');
             if (version === renderVersion) messageBox.innerHTML = '<div class="empty-state">加载失败</div>';
         }
+    }
+    async function fetchAndShowNotifications() {
+        try {
+            const result = await apiCall('/notifications');
+            if (result.success && result.notifications && result.notifications.length > 0) {
+                for (const notif of result.notifications) {
+                    if (notif.type === 'friend_deleted') {
+                        showToast(`⚠️ ${notif.by} 已将您从好友列表中删除`);
+                    }
+                }
+            }
+        } catch (e) {
+            debugLog('❌ 获取通知失败: ' + e.message, 'error');
+        }
+    }
+    function showToast(message, type = 'error') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        // 自动消失
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => {
+                if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 300);
+        }, 4000);
     }
 
     // ---- 渲染消息 ----
@@ -678,6 +763,17 @@
             alert('请先选择好友');
             return;
         }
+        // ⭐ 新增：检查好友关系
+        const isFriend = friends.some(f => f.username === currentFriend);
+        if (!isFriend) {
+            alert('⚠️ 对方已不是您的好友，无法发送消息');
+            chatArea.classList.remove('active');
+            currentFriend = null;
+            chatFriendName.textContent = '选择好友';
+            messageBox.innerHTML = '<div class="empty-state">选择一位好友开始聊天</div>';
+            renderFriendList();
+            return;
+        }
         const clean = text.trim();
         if (!clean) return;
 
@@ -723,8 +819,12 @@
     async function markAsRead(friend) {
         try {
             await apiCall(`/messages/read?friend=${encodeURIComponent(friend)}`, 'POST');
+            // 清空本地未读计数
+            unreadCountMap[friend] = 0;
             renderFriendList();
-        } catch (e) {}
+        } catch (e) {
+            debugLog('❌ 标记已读失败: ' + e.message, 'warn');
+        }
     }
 
     // ---- 删除消息 ----
@@ -779,6 +879,7 @@
                 await loadFriends();
                 await loadRequestCount();
                 startPolling();
+                await fetchAndShowNotifications();
                 loginBtn.disabled = false;
                 loginBtn.textContent = '登 录';
                 return true;
@@ -904,9 +1005,6 @@
     backBtn.addEventListener('click', () => {
         chatArea.classList.remove('active');
     });
-    clearChatBtn.addEventListener('click', () => {
-        if (currentFriend) clearChat(currentFriend);
-    });
 
     addFriendBtn.addEventListener('click', () => {
         addFriendModal.classList.add('active');
@@ -979,6 +1077,75 @@
             emojiPanelVisible = false;
         }
     });
+    // ---- 侧栏菜单 ----
+    function openSideMenu() {
+        chatSideMenu.classList.add('active');
+        chatSideMenu.classList.remove('closing');
+    }
+
+    function closeSideMenu() {
+        chatSideMenu.classList.add('closing');
+        setTimeout(() => {
+            chatSideMenu.classList.remove('active', 'closing');
+        }, 250);
+    }
+
+    menuToggleBtn.addEventListener('click', () => {
+        if (!currentFriend) return;
+        openSideMenu();
+    });
+
+    sideMenuOverlay.addEventListener('click', closeSideMenu);
+    sideMenuCloseBtn.addEventListener('click', closeSideMenu);
+
+    // 清除聊天记录
+    clearChatMenuItem.addEventListener('click', () => {
+        closeSideMenu();
+        if (currentFriend) clearChat(currentFriend);
+    });
+
+    // 删除好友
+    deleteFriendMenuItem.addEventListener('click', () => {
+        closeSideMenu();
+        if (currentFriend) {
+            showConfirm('删除好友', `确定要删除好友 "${currentFriend}" 吗？\n删除后你将无法向对方发送消息，对方仍可看到你。`, async (ok) => {
+                if (ok) {
+                    await deleteFriend(currentFriend);
+                }
+            }, true);
+        }
+    });
+
+    // ---- 删除好友功能 ----
+    async function deleteFriend(friend) {
+        try {
+            const result = await apiCall('/friend/delete', 'POST', { friend });
+            if (result.success) {
+                alert(`已删除好友 ${friend}`);
+                // 直接使用服务器返回的新好友列表
+                if (result.friends) {
+                    friends = result.friends.map(f => ({ username: f, unread: false }));
+                    renderFriendList();
+                } else {
+                    // 兼容旧逻辑
+                    friends = friends.filter(f => f.username !== friend);
+                    renderFriendList();
+                }
+                // 清理缓存
+                delete messagesCache[friend];
+                if (currentFriend === friend) {
+                    currentFriend = null;
+                    chatArea.classList.remove('active');
+                    chatFriendName.textContent = '选择好友';
+                    messageBox.innerHTML = '<div class="empty-state">选择一位好友开始聊天</div>';
+                }
+            } else {
+                alert('删除失败: ' + (result.error || '未知错误'));
+            }
+        } catch (e) {
+            alert('删除失败: ' + e.message);
+        }
+    }
 
     // 如果输入框获得焦点，不自动关闭面板（用户可手动点击表情按钮关闭）
 
@@ -1021,5 +1188,12 @@
         stopPolling();
         if (ws) ws.close();
         clearTimeout(reconnectTimer);
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentToken) {
+            debugLog('📋 页面可见，刷新好友列表', 'info');
+            loadFriends();
+            loadRequestCount();
+        }
     });
 })();
