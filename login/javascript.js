@@ -521,16 +521,16 @@
     // ---- 好友列表（核心修复：在线状态由WebSocket控制） ----
     async function loadFriends() {
         debugLog('📋 加载好友列表...', 'info');
+        // 显示加载中
+        friendListContainer.innerHTML = '<div class="empty-state">加载中...</div>';
         try {
             const result = await apiCall('/friends');
             if (result.friends && Array.isArray(result.friends)) {
-                // 更新 friends 数组
                 friends = result.friends.map(f => ({
                     username: f.username,
-                    nickname: f.nickname || '',   // 新增
+                    nickname: f.nickname || '',
                     unread: f.unread || 0
                 }));
-                // 更新未读计数
                 unreadCountMap = {};
                 for (const f of friends) {
                     if (f.unread > 0) {
@@ -1239,13 +1239,11 @@
             alert('删除失败: ' + e.message);
         }
     }
-
-    // 如果输入框获得焦点，不自动关闭面板（用户可手动点击表情按钮关闭）
-    // ---- 加载每日风景图 ----
+    
     async function loadDailyWallpaper() {
         const loginPage = document.getElementById('loginPage');
         // 使用本地图片，保持原始宽高比，完整可见（可能有留白）
-        loginPage.style.backgroundImage = 'url("background.jpg")';
+        loginPage.style.backgroundImage = 'url("../background.png")';
         loginPage.style.backgroundSize = 'cover';   // 完整显示，不裁剪，不拉伸
         loginPage.style.backgroundRepeat = 'no-repeat';
         loginPage.style.backgroundPosition = 'center';
