@@ -11,7 +11,6 @@
     const sendBtn = document.getElementById('sendBtn');
     const backBtn = document.getElementById('backBtn');
     const logoutBtn = document.getElementById('logoutBtn');
-    const myUsernameSpan = document.getElementById('myUsername');
     const addFriendBtn = document.getElementById('addFriendBtn');
     const aboutBtn = document.getElementById('aboutBtnFriend');
     const settingsBtn = document.getElementById('settingsBtn');
@@ -337,7 +336,6 @@ function hideConfirm() {
 
         const obj = friends.find(f => f.username === trim);
         chatFriendName.textContent = obj?.nickname || trim;
-
         if (window.innerWidth <= 768) {
             document.getElementById('topBar').style.display = 'none';
             const friendList = document.getElementById('friendList');
@@ -355,7 +353,7 @@ function hideConfirm() {
             '<div class="empty-state">加载中...</div>';
 
         messagesCache[trim] = [];
-
+    if (unreadCountMap[trim]) unreadCountMap[trim] = 0;
         renderFriendList();
         loadMessages(trim, ver);
         markAsRead(trim);
@@ -766,7 +764,6 @@ function hideConfirm() {
             return;
         }
         currentUser = profile.profile.username;
-        myUsernameSpan.textContent = profile.profile.nickname || currentUser;
         mainPage.classList.add('active');
         await loadProfile();
         connectWebSocket();
@@ -789,7 +786,6 @@ function hideConfirm() {
                 document.getElementById('profileNickname').value = p.nickname || '';
                 document.getElementById('profileBio').value = p.bio || '';
                 document.getElementById('profileEmail').value = p.email || '';
-                myUsernameSpan.textContent = p.nickname || p.username;
             }
         } catch (e) {}
     }
@@ -1028,7 +1024,6 @@ function hideConfirm() {
             const res = await apiCall('/profile', 'PUT', { nickname, bio, email });
             if (res.success) {
                 showToast('资料更新成功', 'success');
-                myUsernameSpan.textContent = res.profile.nickname || res.profile.username;
                 renderFriendList();
                 document.getElementById('profileModal').classList.add('closing');
                 setTimeout(() => document.getElementById('profileModal').classList.remove('active', 'closing'), 200);

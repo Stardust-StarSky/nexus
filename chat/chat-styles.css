@@ -140,12 +140,17 @@ body {
     background: #4f71f9;
     color: white;
     border-radius: 50%;
-    padding: 1px 6px;
-    font-size: 12px;
+    font-size: 11px;
     min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
     text-align: center;
     margin-left: 6px;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 .user-footer {
     padding: 8px 18px;
@@ -183,7 +188,7 @@ body {
 }
 .chat-header {
     padding: 8px 20px;
-    border: 1px solid #e9edf2;
+    border-bottom: 1px solid #e9edf2;
     border-top-left-radius: 30px;
     border-top-right-radius: 30px;
     display: flex;
@@ -240,17 +245,15 @@ body {
     align-self: flex-start;
     background: white;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    border: 1px solid #eef2f6;
     animation: fadeIn 0.2s ease;
 }
 .msg-item.me {
     align-self: flex-end;
-    background: #3b82f6;
+    background: linear-gradient(90deg, #4565fb, #8f54f7);
     color: white;
-    border-color: #3b82f6;
 }
 .msg-item .msg-text { font-size: 15px; line-height: 1.5; }
-.msg-item .msg-text.recalled { color: #94a3b8; font-style: italic; }
+.msg-item .msg-text.recalled { color: #7e8a9c; font-style: italic; }
 .msg-item.no-animation { animation: none; }
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
@@ -509,7 +512,6 @@ body {
     padding: 6px 0;
     z-index: 99999;
     min-width: 140px;
-    border: 1px solid #e9edf2;
     overflow: hidden;
 }
 #customMenu .menu-item {
@@ -779,11 +781,11 @@ body {
     .user-footer .logout-btn { background: #2a2a32; color: #cbd5e1; }
     .user-footer .logout-btn:hover { background: #3a3a44; }
     #chatArea { background: #203169; }
-    .chat-header { background: linear-gradient(90deg, #2f2e68, #203169); border-bottom-color: #2a2a32; border: none; }
+    .chat-header { background: linear-gradient(90deg, #2f2e68, #203169); border-bottom: 1px solid #3d3d49; }
     .chat-header .friend-name { color: #f1f5f9; }
     .message-box { background: linear-gradient(90deg, #2f2e68, #203169); border: none; }
-    .msg-item { background: #2a2a32; border-color: #3a3a44; color: #e2e8f0; }
-    .msg-item.me { background: #1d4ed8; border-color: #1d4ed8; color: white; }
+    .msg-item { background: white; color: black; }
+    .msg-item.me { background: linear-gradient(90deg, #4565fb, #8f54f7); color: white; }
     .time-label { color: #64748b; }
     .input-area { background: linear-gradient(90deg, #2f2e68, #203169); border-top-color: #2a2a32; border: none; }
     .input-area input { background: #17234b; border-color: #3a3a44; color: #f1f5f9; }
@@ -802,9 +804,9 @@ body {
     #replyBar button:hover {
         color: #f1f5f9 !important;
     }
-    #customMenu { background: #1e293b; border-color: #334155; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    #customMenu { background: #081737; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
     #customMenu .menu-item { color: #e2e8f0; }
-    #customMenu .menu-item:hover { background: #334155; }
+    #customMenu .menu-item:hover { background: #0d2152; }
     #customMenu .menu-item:not(:last-child) { border-bottom-color: #334155; }
     #profileModal .modal-box input:disabled { background: #0d2048 !important; color: #94a3b8 !important; }
     #profileModal .modal-box label { color: #cbd5e1 !important; }
@@ -951,19 +953,19 @@ body {
         height: 6px;
     }
     ::-webkit-scrollbar-track {
-        background: #081737;
+        background: #203169;
     }
     ::-webkit-scrollbar-thumb {
-        background: #3a3a44;
+        background: #203169;
         border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb:hover {
-        background: #4a4a54;
+        background: #203169;
     }
     /* Firefox 滚动条 */
     * {
         scrollbar-width: thin;
-        scrollbar-color: #3a3a44 #081737;
+        scrollbar-color: #203169 #203169;
     }
     .icon {
         fill: white;
