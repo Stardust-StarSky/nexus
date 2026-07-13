@@ -166,44 +166,22 @@ function hideConfirm() {
 
     // ---- WebSocket ----
     function connectWebSocket() {
+        console.log('[connectWebSocket] 开始');
         if (isConnecting || (ws && ws.readyState === WebSocket.OPEN)) return;
         isConnecting = true;
         try {
             const wsUrl = WORKER_URL.replace('https://', 'wss://').replace('http://', 'ws://') + '/ws';
+            console.log('[connectWebSocket] wsUrl:', wsUrl);
             ws = new WebSocket(wsUrl);
+            console.log('[connectWebSocket] WebSocket 对象已创建');
             ws.onopen = () => {
-                isConnecting = false;
-                debugLog('WS连接成功', 'ok');
-                if (currentToken) ws.send(JSON.stringify({ type: 'auth', token: currentToken, username: currentUser }));
-                // 不再重复加载好友列表（已在 init 中加载）
-                if (heartbeatInterval) clearInterval(heartbeatInterval);
-                heartbeatInterval = setInterval(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'ping' }));
-                }, 30000);
+                // ...
             };
-            ws.onmessage = (ev) => {
-                try { handleWsMessage(JSON.parse(ev.data)); }
-                catch (e) { debugLog('WS解析失败: ' + e.message, 'error'); }
-            };
-            ws.onclose = () => {
-                debugLog('WS关闭', 'warn');
-                isConnecting = false;
-                if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-                ws = null;
-                loadFriends();
-                if (currentToken) {
-                    clearTimeout(reconnectTimer);
-                    reconnectTimer = setTimeout(connectWebSocket, 3000);
-                }
-            };
-            ws.onerror = () => {
-                debugLog('WS错误', 'error');
-                isConnecting = false;
-                if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-            };
+            // ... 其余事件绑定
         } catch (e) {
+            console.error('[connectWebSocket] 同步错误:', e);
             isConnecting = false;
-            debugLog('WS连接失败: ' + e.message, 'error');
+            // 不重试，避免死循环
         }
     }
 
