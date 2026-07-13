@@ -738,33 +738,25 @@ function hideConfirm() {
         }
         currentToken = token;
         try {
-            console.log('[init] 正在获取 profile...');
+            console.log('1. 获取 profile');
             const profile = await apiCall('/profile');
-            console.log('[init] profile 响应:', profile);
-            if (!profile.success) {
-                console.warn('[init] profile.success 为 false');
-                localStorage.removeItem('token');
-                window.location.href = '/login';
-                return;
-            }
+            console.log('2. 设置 currentUser');
             currentUser = profile.profile.username;
-            console.log('[init] currentUser:', currentUser);
+            console.log('3. 添加 mainPage active');
             mainPage.classList.add('active');
-            console.log('[init] 正在加载个人资料...');
+            console.log('4. 加载个人资料');
             await loadProfile();
-            console.log('[init] 正在连接 WebSocket...');
+            console.log('5. 连接 WebSocket');
             connectWebSocket();
-            console.log('[init] 正在加载好友列表...');
+            console.log('6. 加载好友');
             await loadFriends(true);
-            console.log('[init] 正在加载申请数...');
+            console.log('7. 加载申请');
             await loadRequestCount();
-            console.log('[init] 正在启动轮询...');
+            console.log('8. 启动轮询');
             startPolling();
-            debugLog('聊天初始化完成', 'ok');
+            console.log('9. 完成');
         } catch (e) {
-            console.error('[init] 错误:', e);
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+            console.error('错误发生在:', e);
         }
     }
     async function loadProfile() {
