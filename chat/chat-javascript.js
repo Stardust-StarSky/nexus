@@ -29,6 +29,74 @@
     const searchResultList = document.getElementById('searchResultList');
     const closeSearchBtn = document.getElementById('closeSearchBtn');
     const statusDot = document.getElementById('statusDot');
+    const paletteBtn = document.getElementById('paletteBtn');
+    const colorPickerModal = document.getElementById('colorPickerModal');
+    const colorPalette = document.getElementById('colorPalette');
+    const closeColorPickerBtn = document.getElementById('closeColorPickerBtn');
+    const PRESET_THEMES = [
+    {
+        name: '默认亮色',
+        gradient: 'linear-gradient(90deg, #f3f1ff, #eff5ff)',
+        solid: '#ffffff',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        card: '#ffffff',
+        border: '#e9edf2',
+        accent: '#3b82f6',
+        logo: 'light',
+        scheme: 'light',
+        isDefault: true
+    },
+    {
+        name: '默认暗色',
+        gradient: 'linear-gradient(90deg, #2f2e68, #203169)',
+        solid: '#0f0f1a',
+        text: '#f1f5f9',
+        textSecondary: '#94a3b8',
+        card: '#1c1c22',
+        border: '#2a2a32',
+        accent: '#60a5fa',
+        logo: 'dark',
+        scheme: 'dark',
+        isDefault: true
+    },
+    {
+        name: '薄荷清新',
+        gradient: 'linear-gradient(90deg, #d4f1f9, #b8e1f0)',
+        solid: '#f5fbfd',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        card: '#ffffff',
+        border: '#d1e4ed',
+        accent: '#0ea5e9',
+        logo: 'light',
+        scheme: 'light'
+    },
+    {
+        name: '暖阳',
+        gradient: 'linear-gradient(90deg, #fff3e0, #ffe0b2)',
+        solid: '#fffcf5',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        card: '#ffffff',
+        border: '#f0dcc8',
+        accent: '#f97316',
+        logo: 'light',
+        scheme: 'light'
+    },
+    {
+        name: '薰衣草',
+        gradient: 'linear-gradient(90deg, #e8dff5, #d4c4f0)',
+        solid: '#f8f5fc',
+        text: '#1e293b',
+        textSecondary: '#64748b',
+        card: '#ffffff',
+        border: '#ddd0e6',
+        accent: '#8b5cf6',
+        logo: 'light',
+        scheme: 'light'
+    },
+    ];
 
     // ---- 状态 ----
     let currentUser = null;
@@ -147,22 +215,13 @@
     }
     // ----
 
-    // ---- 主题与 Logo ----
-    function updateLogo() {
-        const logo = document.getElementById('logo');
-        if (!logo) return;
-        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        logo.src = isDark ? '/logo-chat-dark.png' : '/logo-chat-light.png';
-    }
-
     // 监听主题变化
     const darkModeMedia = window.matchMedia('(prefers-color-scheme: dark)');
-    darkModeMedia.addEventListener('change', updateLogo);
 
     function triggerEasterEgg() {
         if (confettiActive) return;
         // 显示祝贺消息
-        showToast('🎉 彩蛋解锁！Nexus 1.11.2 · 你点了7次，世界欠你一个赞！', 'info');
+        showToast('🎉 彩蛋解锁！Nexus 1.11.3 · 你点了7次，世界欠你一个赞！', 'info');
 
         // 启动五彩纸屑
         startConfetti(5000);
@@ -275,6 +334,114 @@
     function hideNewMessageHint() {
         document.getElementById('newMsgHint').style.display = 'none';
         pendingNewMessages = 0;
+    }
+    function getDefaultTheme() {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return PRESET_THEMES.find(t => t.isDefault && t.scheme === (isDark ? 'dark' : 'light')) || PRESET_THEMES[0];
+    }
+
+    function loadTheme() {
+        const saved = localStorage.getItem('chat_theme');
+        if (saved) {
+            try {
+                const theme = JSON.parse(saved);
+                applyTheme(theme);
+            } catch (e) {
+                applyTheme(getDefaultTheme());
+            }
+        } else {
+            applyTheme(getDefaultTheme());
+        }
+    }
+    function applyTheme(theme) {
+        const root = document.documentElement;
+        const isDark = theme.scheme === 'dark';
+
+        // 文本和边框
+        root.style.setProperty('--text-color', theme.text);
+        root.style.setProperty('--text-secondary', theme.textSecondary);
+        root.style.setProperty('--border-color', theme.border);
+
+        // 背景
+        root.style.setProperty('--solid-bg', theme.solid);
+        root.style.setProperty('--card-bg', theme.card);
+        root.style.setProperty('--friend-bg', 'transparent');
+        root.style.setProperty('--friend-hover', isDark ? '#2a2a32' : '#f1f5f9');
+        root.style.setProperty('--friend-active-bg', `linear-gradient(135deg, ${theme.accent}22, ${theme.accent}33)`);
+
+        // 强调色
+        root.style.setProperty('--accent-color', theme.accent);
+        root.style.setProperty('--accent-hover', isDark ? '#1d4ed8' : '#2563eb');
+
+        // 按钮
+        root.style.setProperty('--button-bg', isDark ? '#2a2a32' : '#e9edf2');
+        root.style.setProperty('--button-hover', isDark ? '#3a3a44' : '#d1d9e6');
+
+        // 头像
+        root.style.setProperty('--avatar-bg', isDark ? '#2a2a32' : '#dbeafe');
+        root.style.setProperty('--avatar-color', isDark ? '#60a5fa' : '#2563eb');
+
+        // 输入框背景
+        root.style.setProperty('--input-bg', theme.card);
+
+        // ----- 以下为原有内联样式设置（保留）-----
+        // 1. 聊天区域渐变背景
+        const chatElements = [
+            document.querySelector('.chat-header'),
+            document.querySelector('.message-box'),
+            document.querySelector('.input-area')
+        ];
+        chatElements.forEach(el => {
+            if (el) el.style.background = theme.gradient;
+        });
+
+        // 2. 纯色背景元素（顶部栏、好友列表、底部等）
+        const solidElements = [
+            document.getElementById('app'),
+            document.getElementById('friendList'),
+            document.getElementById('topBar'),
+            document.querySelector('.friend-footer')
+        ];
+        solidElements.forEach(el => {
+            if (el) el.style.background = theme.solid;
+        });
+
+        // 3. 文字颜色（仅用于部分元素，因变量已全局设置，可移除内联，但保留用于兼容）
+        // 可删除或保留，但建议让变量控制，避免内联覆盖
+
+        // 4. 卡片/消息气泡
+        document.querySelectorAll('.msg-item:not(.me)').forEach(el => {
+            el.style.background = theme.card;
+            el.style.borderColor = theme.border;
+            el.style.color = theme.text;
+        });
+        document.querySelectorAll('.msg-item.me').forEach(el => {
+            el.style.background = theme.accent;
+            el.style.color = 'white';
+            el.style.borderColor = theme.accent;
+        });
+
+        // 5. 边框（部分元素）
+        document.querySelectorAll('.friend-header, .chat-header, .input-area, .user-footer, .friend-footer, .friend-item').forEach(el => {
+            if (el) el.style.borderColor = theme.border;
+        });
+
+        // 6. Logo
+        const logo = document.getElementById('logo');
+        if (logo) {
+            logo.src = theme.logo === 'dark' ? '/logo-chat-dark.png' : '/logo-chat-light.png';
+        }
+
+        // 7. SVG 图标颜色
+        document.querySelectorAll('.icon, .roundedBtn svg, .friend-header-btn svg').forEach(svg => {
+            svg.style.fill = theme.text;
+            if (svg.tagName === 'svg') {
+                svg.style.stroke = theme.text;
+            }
+        });
+
+        // 保存到 localStorage
+        localStorage.setItem('chat_theme', JSON.stringify(theme));
     }
 
     // ---- API ----
@@ -429,19 +596,6 @@
                     delete messagesCache[data.by];
                 }
                 break;
-            case 'online_status': {
-                const { username, online } = data;
-                // 更新 friends 中的在线状态
-                const friend = friends.find(f => f.username === username);
-                if (friend) {
-                    friend.online = online;
-                    // 如果当前聊天对象是该好友，更新状态点
-                    if (currentFriend === username) {
-                        updateStatusDot(username);
-                    }
-                }
-                break;
-            }
             default: break;
         }
     }
@@ -455,7 +609,7 @@
         try {
             const res = await apiCall('/friends');
             if (res.friends && Array.isArray(res.friends)) {
-                friends = res.friends.map(f => ({ username: f.username, nickname: f.nickname || '', unread: f.unread || 0, online: f.online || false }));
+                friends = res.friends.map(f => ({ username: f.username, nickname: f.nickname || '', unread: f.unread || 0 }));
                 unreadCountMap = {};
                 for (const f of friends) { if (f.unread > 0) unreadCountMap[f.username] = f.unread; }
                 renderFriendList();
@@ -496,40 +650,11 @@
         });
     }
 
-    function updateStatusDot(username) {
-        console.log('[updateStatusDot] 被调用, username:', username, 'friends:', friends);
-        if (!statusDot) {
-            console.warn('[updateStatusDot] statusDot 元素不存在');
-            return;
-        }
-        if (!username) {
-            statusDot.className = 'status-dot offline';
-            statusDot.title = '未选择好友';
-            return;
-        }
-        const friend = friends.find(f => f.username === username);
-        if (!friend) {
-            console.warn('[updateStatusDot] 未找到好友:', username);
-            statusDot.className = 'status-dot offline';
-            statusDot.title = '未知好友';
-            return;
-        }
-        console.log('[updateStatusDot] 找到好友:', friend, 'online:', friend.online);
-        if (friend.online) {
-            statusDot.className = 'status-dot online';
-            statusDot.title = '在线';
-        } else {
-            statusDot.className = 'status-dot offline';
-            statusDot.title = '离线';
-        }
-    }
-
     function selectFriend(friend) {
         if (!friend) return;
 
         const trim = friend.trim();
         currentFriend = trim;
-        updateStatusDot(trim); // 添加此行
 
         const obj = friends.find(f => f.username === trim);
         chatFriendName.textContent = obj?.nickname || trim;
@@ -1014,6 +1139,26 @@
         clearInterval(window._friendPollTimer); 
     }
 
+    function renderColorPicker() {
+        const current = localStorage.getItem('chat_theme') ? JSON.parse(localStorage.getItem('chat_theme')) : null;
+        const currentTheme = current || getDefaultTheme();
+        colorPalette.innerHTML = '';
+        PRESET_THEMES.forEach(t => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch' + (t.gradient === currentTheme.gradient && t.solid === currentTheme.solid ? ' active' : '');
+            swatch.style.background = t.gradient;
+            swatch.title = t.name;
+            swatch.dataset.theme = JSON.stringify(t);
+            swatch.addEventListener('click', function() {
+                const theme = JSON.parse(this.dataset.theme);
+                applyTheme(theme);
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+            colorPalette.appendChild(swatch);
+        });
+    }
+
     // ---- 初始化 ----
     async function init() {
         console.log('[init] 开始');
@@ -1029,7 +1174,7 @@
             const profile = await apiCall('/profile');
             currentUser = profile.profile.username;
             mainPage.classList.add('active');
-            updateLogo();
+            loadTheme(); // 加载主题
             await loadProfile();
             connectWebSocket();
             await loadFriends(true);
@@ -1363,6 +1508,15 @@
             emojiPanel.classList.remove('show');
             emojiVisible = false;
         }
+    });
+    paletteBtn?.addEventListener('click', () => {
+        renderColorPicker();
+        openModal('colorPickerModal');
+    });
+
+    closeColorPickerBtn?.addEventListener('click', () => closeModal('colorPickerModal'));
+    colorPickerModal?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal('colorPickerModal');
     });
     // 滚动检测
     messageBox?.addEventListener('scroll', function() {

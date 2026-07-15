@@ -68,7 +68,7 @@
     <div id="mainPage">
         <header id="topBar">
             <div class="brand">
-                <img src="/logo-chat-dark.png" id="logo">
+                <img src="/logo-chat-light.png" id="logo">
             </div>
             <div class="topActions">
                 <button class="roundedBtn" id="addFriendBtn" title="添加好友">
@@ -92,6 +92,7 @@
                 <!-- 新增：好友列表底部版本号 -->
                 <div class="friend-footer">
                     <span class="version-display" id="versionDisplay" title="点击7次有惊喜">当前版本：1.11.2</span>
+                    <button class="palette-btn" id="paletteBtn" title="切换聊天背景">🎨</button>
                 </div>
             </div>
             <div id="chatArea">
@@ -99,7 +100,6 @@
                 <div class="chat-header">
                     <button class="back-btn" id="backBtn">‹</button>
                     <button class="friend-name-btn" id="chatFriendName" title="点击查看好友资料">选择好友</button>
-                    <span id="statusDot" class="status-dot offline" title="离线"></span>
                     <div class="actions">
                         <button class="roundedBtn" id="menuToggleBtn" title="更多操作">
                             <svg t="1783933655400" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="20041" width="23" height="23"><path d="M170.666667 170.666667a42.666667 42.666667 0 0 0-42.666667 42.666666 42.666667 42.666667 0 0 0 42.666667 42.666667h682.666666a42.666667 42.666667 0 0 0 42.666667-42.666667 42.666667 42.666667 0 0 0-42.666667-42.666666zM170.666667 469.333333a42.666667 42.666667 0 0 0-42.666667 42.666667 42.666667 42.666667 0 0 0 42.666667 42.666667h682.666666a42.666667 42.666667 0 0 0 42.666667-42.666667 42.666667 42.666667 0 0 0-42.666667-42.666667zM170.666667 768a42.666667 42.666667 0 0 0-42.666667 42.666667 42.666667 42.666667 0 0 0 42.666667 42.666666h682.666666a42.666667 42.666667 0 0 0 42.666667-42.666666 42.666667 42.666667 0 0 0-42.666667-42.666667z" p-id="20042"></path></svg>
@@ -214,6 +214,18 @@
             </div>
             <div class="btn-row" style="margin-top:12px;">
                 <button class="btn-secondary" id="closeSearchBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+    <!-- 背景颜色选择模态框 -->
+    <div class="modal-overlay" id="colorPickerModal">
+        <div class="modal-box" style="max-width: 360px;">
+            <h3>选择聊天背景</h3>
+            <div id="colorPalette" style="display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; justify-content:center;">
+                <!-- 由 JS 动态生成 -->
+            </div>
+            <div class="btn-row" style="margin-top:16px;">
+                <button class="btn-secondary" id="closeColorPickerBtn">关闭</button>
             </div>
         </div>
     </div>
