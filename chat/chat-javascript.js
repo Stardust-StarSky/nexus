@@ -28,6 +28,7 @@
     const searchInput = document.getElementById('searchInput');
     const searchResultList = document.getElementById('searchResultList');
     const closeSearchBtn = document.getElementById('closeSearchBtn');
+    const statusDot = document.getElementById('statusDot');
 
     // ---- 状态 ----
     let currentUser = null;
@@ -196,49 +197,49 @@
         }, 300);
     }
     function showConfirm(title, msg, callback, danger = false) {
-    const el = document.getElementById('customConfirm');
-    if (!el) {
-        console.error('❌ customConfirm 元素不存在');
-        return;
-    }
-    document.getElementById('confirmTitle').textContent = title;
-    document.getElementById('confirmMessage').textContent = msg;
-    const okBtn = document.getElementById('confirmOk');
-    okBtn.style.background = danger ? '#ef4444' : '#3b82f6';
+        const el = document.getElementById('customConfirm');
+        if (!el) {
+            console.error('❌ customConfirm 元素不存在');
+            return;
+        }
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmMessage').textContent = msg;
+        const okBtn = document.getElementById('confirmOk');
+        okBtn.style.background = danger ? '#ef4444' : '#3b82f6';
 
-    // 重置状态
-    el.classList.remove('closing', 'active');
-    el.style.display = 'flex';
-    
-    // 强制重绘 + 双帧延迟，确保过渡生效
-    void el.offsetHeight;
-    requestAnimationFrame(() => {
+        // 重置状态
+        el.classList.remove('closing', 'active');
+        el.style.display = 'flex';
+        
+        // 强制重绘 + 双帧延迟，确保过渡生效
+        void el.offsetHeight;
         requestAnimationFrame(() => {
-            el.classList.add('active');
+            requestAnimationFrame(() => {
+                el.classList.add('active');
+            });
         });
-    });
 
-    const cb = (ok) => {
-        callback(ok);
-        hideConfirm();
-    };
-    document.getElementById('confirmOk').onclick = () => cb(true);
-    document.getElementById('confirmCancel').onclick = () => cb(false);
-    el.onclick = (e) => {
-        if (e.target === e.currentTarget) cb(false);
-    };
-}
+        const cb = (ok) => {
+            callback(ok);
+            hideConfirm();
+        };
+        document.getElementById('confirmOk').onclick = () => cb(true);
+        document.getElementById('confirmCancel').onclick = () => cb(false);
+        el.onclick = (e) => {
+            if (e.target === e.currentTarget) cb(false);
+        };
+    }
 
-function hideConfirm() {
-    const el = document.getElementById('customConfirm');
-    if (!el) return;
-    el.classList.remove('active');
-    el.classList.add('closing');
-    setTimeout(() => {
-        el.style.display = 'none';
-        el.classList.remove('closing');
-    }, 300);
-}
+    function hideConfirm() {
+        const el = document.getElementById('customConfirm');
+        if (!el) return;
+        el.classList.remove('active');
+        el.classList.add('closing');
+        setTimeout(() => {
+            el.style.display = 'none';
+            el.classList.remove('closing');
+        }, 300);
+    }
     function debugLog(msg, type = 'info', data = null) {
         const time = new Date().toLocaleTimeString();
         const prefix = type === 'ok' ? '✅' : type === 'warn' ? '⚠️' : type === 'error' ? '❌' : '📌';
@@ -428,6 +429,19 @@ function hideConfirm() {
                     delete messagesCache[data.by];
                 }
                 break;
+            case 'online_status': {
+                const { username, online } = data;
+                // 更新 friends 中的在线状态
+                const friend = friends.find(f => f.username === username);
+                if (friend) {
+                    friend.online = online;
+                    // 如果当前聊天对象是该好友，更新状态点
+                    if (currentFriend === username) {
+                        updateStatusDot(username);
+                    }
+                }
+                break;
+            }
             default: break;
         }
     }
@@ -441,7 +455,7 @@ function hideConfirm() {
         try {
             const res = await apiCall('/friends');
             if (res.friends && Array.isArray(res.friends)) {
-                friends = res.friends.map(f => ({ username: f.username, nickname: f.nickname || '', unread: f.unread || 0 }));
+                friends = res.friends.map(f => ({ username: f.username, nickname: f.nickname || '', unread: f.unread || 0, online: f.online || false }));
                 unreadCountMap = {};
                 for (const f of friends) { if (f.unread > 0) unreadCountMap[f.username] = f.unread; }
                 renderFriendList();
@@ -481,11 +495,41 @@ function hideConfirm() {
             el.addEventListener('click', () => selectFriend(el.dataset.friend));
         });
     }
+
+    function updateStatusDot(username) {
+        console.log('[updateStatusDot] 被调用, username:', username, 'friends:', friends);
+        if (!statusDot) {
+            console.warn('[updateStatusDot] statusDot 元素不存在');
+            return;
+        }
+        if (!username) {
+            statusDot.className = 'status-dot offline';
+            statusDot.title = '未选择好友';
+            return;
+        }
+        const friend = friends.find(f => f.username === username);
+        if (!friend) {
+            console.warn('[updateStatusDot] 未找到好友:', username);
+            statusDot.className = 'status-dot offline';
+            statusDot.title = '未知好友';
+            return;
+        }
+        console.log('[updateStatusDot] 找到好友:', friend, 'online:', friend.online);
+        if (friend.online) {
+            statusDot.className = 'status-dot online';
+            statusDot.title = '在线';
+        } else {
+            statusDot.className = 'status-dot offline';
+            statusDot.title = '离线';
+        }
+    }
+
     function selectFriend(friend) {
         if (!friend) return;
 
         const trim = friend.trim();
         currentFriend = trim;
+        updateStatusDot(trim); // 添加此行
 
         const obj = friends.find(f => f.username === trim);
         chatFriendName.textContent = obj?.nickname || trim;
